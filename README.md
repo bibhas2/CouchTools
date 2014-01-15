@@ -41,18 +41,23 @@ To import the view into the design document called UserUtilities in the default 
 You can perform various operations on documents. Currently viewing and deleting is supported.
 
 ###Usage
-	./manageDoc.sh [-show | -delete | -help] -key key [-bucket bucket_name] [-url connection_url] [-password bucket_password]
+	./manageDoc.sh [-show | -delete | -help] -key key [-bucket bucket_name] [-url connection_url] [-password bucket_password] [-pretty]
 
 The options are as follows:
 
 - **-key** - The key of the document.
 - **-show** - Dump the document for the given key.
 - **-delete** - Delete the document.
+- **-pretty** - Format the document output for JSON. Only used with -show. Use it only if you know that the document is JSON.
 - **-bucket** - The name of the bucket. Defaults to "default".
 - **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
 - **-password** - The bucket password if any.
 
 ###Example
+Show a JSON document with key xyz1bc123:
+
+	./manageDoc.sh -show -key xyz1bc123 -pretty
+
 To delete a document with the key xyz1bc123:
 
 	./manageDoc.sh -delete -key xyz1bc123
