@@ -51,7 +51,6 @@ The options are as follows:
 - **-bucket** - The name of the bucket. Defaults to "default".
 - **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
 - **-password** - The bucket password if any.
-- 
 
 ###Example
 To delete a document with the key xyz1bc123:
