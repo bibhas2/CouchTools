@@ -10,7 +10,7 @@ For each view, create a file with the same name as the view and with a .map exte
 If a view has a reduce function, then in addition to the .map file, create a .reduce file and add the reduce code there. For example, if you have a view called CountLikes then you will need two files - CountLikes.map and CountLikes.reduce.
 
 ###Usage
-./importViews.sh -designdoc design_document_name -bucket bucket_name [-host hostname] [-port port_number] [-user userID] [-password password] [-help] file1.map file2.map...
+	./importViews.sh -designdoc design_document_name -bucket bucket_name [-host hostname] [-port port_number] [-user userID] [-password password] [-help] file1.map file2.map...
 
 The options are as follows:
 
@@ -25,23 +25,23 @@ The options are as follows:
 ###Examples
 Let us say that you have a view called UserByEmail with the following code:
 
-  function (doc, meta) {
-	  if (doc.type == "UserProfile") {
-		  emit(doc.email, null);
-	  }
-  }
+	 function (doc, meta) {
+		 if (doc.type == "UserProfile") {
+			 emit(doc.email, null);
+		 }
+	 }
 
 Create a file called UserByEmail.map and add the code above.
 
 To import the view into the design document called UserUtilities in the default bucket, run this command:
 
-./importViews.sh -designdoc UserUtilities -bucket default -user Admin -password pass UserByEmail.map
+	./importViews.sh -designdoc UserUtilities -bucket default -user Admin -password pass UserByEmail.map
 
 ##manageDoc - Manage documents
 You can perform various operations on documents. Currently viewing and deleting is supported.
 
 ###Usage
-./manageDoc.sh [-show | -delete | -help] -key key [-bucket bucket_name] [-url connection_url] [-password bucket_password]
+	./manageDoc.sh [-show | -delete | -help] -key key [-bucket bucket_name] [-url connection_url] [-password bucket_password]
 
 The options are as follows:
 
@@ -56,6 +56,6 @@ The options are as follows:
 ###Example
 To delete a document with the key xyz1bc123:
 
-./manageDoc.sh -delete -key xyz1bc123
+	./manageDoc.sh -delete -key xyz1bc123
 
 
