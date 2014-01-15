@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="CouchTools Packaging Script" default="package" basedir=".">
+	<target name="makejar" description="Create a jar for the project">
+		<delete file="lib/couchtools.jar"/>
+		<jar jarfile="lib/couchtools.jar" includes="**/*.class" basedir="bin" />
+	</target>
+	<target name="package" description="Create the final package" depends="makejar">
+		<tar destfile="CouchTools.tar.gz" compression="gzip">
+			<fileset dir="lib"/>
+			<tarfileset dir="scripts" filemode="755"/>
+		</tar>
+		<delete file="lib/couchtools.jar"/>
+	</target>
+</project>
