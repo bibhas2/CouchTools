@@ -1,8 +1,12 @@
 package com.mobiarch.tools;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import com.couchbase.client.CouchbaseClient;
 import com.google.gson.Gson;
@@ -38,7 +42,7 @@ public class ManageDoc {
 
 	public static void usage() {
 		System.out
-				.println("Usage: manageDoc.sh [-show | -delete | -help] -key key [-bucket bucket_name] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password]");
+				.println("Usage: manageDoc.sh [-get | -set | -delete | -help] -key key [-bucket bucket_name] [-in input_file] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password]");
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -53,6 +57,8 @@ public class ManageDoc {
 		String password = getArg(args, "-password", "");
 		String bucket = getArg(args, "-bucket", "default");
 		boolean pretty = hasArg(args, "-pretty");
+		String in = getArg(args, "-in", null);
+		String out = getArg(args, "-out", null);
 		
 		if (key == null) {
 			usage();
@@ -65,8 +71,10 @@ public class ManageDoc {
 			List<URI> hosts = Arrays.asList(new URI(url));
 			client = new CouchbaseClient(hosts, bucket, password);
 			
-			if (hasArg(args, "-show")) {
-				show(key, client, pretty);
+			if (hasArg(args, "-get")) {
+				get(key, client, pretty, out);
+			} else if (hasArg(args, "-set")) {
+				set(key, client, in);
 			} else if (hasArg(args, "-delete")) {
 				delete(key, client);
 			}
@@ -80,6 +88,31 @@ public class ManageDoc {
 		}
 	}
 
+	private static void set(String key, CouchbaseClient client, String in) throws Exception {
+		InputStream is = getInputStream(in);
+		String obj = readFile(is);
+		
+		System.out.println("==========Setting document===============");
+		client.set(key, obj);
+		System.out.println(obj);
+		System.out.println("=========================================");
+		
+		if (in != null) {
+			is.close();
+		}
+	}
+	
+	private static String readFile(InputStream fis) throws Exception {
+		StringBuffer buff = new StringBuffer(1024);
+		Scanner sc = new Scanner(fis);
+		
+		while(sc.hasNextLine()) {
+			buff.append(sc.nextLine());
+			buff.append("\n");
+		}
+		
+		return buff.toString();
+	}
 	private static void delete(String key, CouchbaseClient client) {
 		System.out.println("==========Deleting document===============");
 		Object doc = client.get(key);
@@ -94,14 +127,16 @@ public class ManageDoc {
 		System.out.println("==================================");
 	}
 
-	private static void show(String key, CouchbaseClient client, boolean pretty) {
+	private static void get(String key, CouchbaseClient client, boolean pretty, String out) throws Exception {
 		Object doc = client.get(key);
 		System.out.println("=================Begin Document=====================");
+		PrintStream writer = getPrintStream(out);
+		
 		if (doc == null) {
 			System.out.println("No document found for key: " + key);
 		} else {
 			if (!pretty) {
-				System.out.println(doc.toString());
+				writer.println(doc.toString());
 			} else {
 				//Format the document
 				JsonParser parser = new JsonParser();
@@ -109,10 +144,29 @@ public class ManageDoc {
 
 				JsonElement el = parser.parse(doc.toString());
 				String jsonString = gson.toJson(el); 
-				System.out.println(jsonString);
+				writer.println(jsonString);
+			}
+			if (out != null) {
+				System.out.println("Document saved in file: " + out);
+			} else {
+				writer.close();
 			}
 		}
 		System.out.println("=================End Document=====================");
 	}
 
+	private static PrintStream getPrintStream(String out) throws Exception {
+		if (out == null) {
+			return System.out;
+		}
+		
+		return new PrintStream(out);
+	}
+	
+	private static InputStream getInputStream(String in) throws Exception {
+		if (in == null) {
+			return System.in;
+		}
+		return new FileInputStream(in);
+	}
 }

@@ -41,12 +41,14 @@ To import the view into the design document called UserUtilities in the default 
 You can perform various operations on documents. Currently viewing and deleting is supported.
 
 ###Usage
-	./manageDoc.sh [-show | -delete | -help] -key key [-bucket bucket_name] [-url connection_url] [-password bucket_password] [-pretty]
+	./manageDoc.sh [-get | -delete | -help] -key key [-in input_file] [-out output_file] [-bucket bucket_name] [-url connection_url] [-password bucket_password] [-pretty]
 
 The options are as follows:
 
 - **-key** - The key of the document.
-- **-show** - Dump the document for the given key.
+- **-get** - Dump the document for the given key. If an output file is set using -out then the document is saved in that file.
+- **-set** - Set the document for the given key. If an input file is set using -in then the document data is read from the file. Otherwise, the document data
+is read from the standard input. if a document by the given key does not exist, it will be added. Otherwise, it will be updated.
 - **-delete** - Delete the document.
 - **-pretty** - Format the document output for JSON. Only used with -show. Use it only if you know that the document is JSON.
 - **-bucket** - The name of the bucket. Defaults to "default".
@@ -56,9 +58,17 @@ The options are as follows:
 ###Example
 Show a JSON document with key xyz1bc123:
 
-	./manageDoc.sh -show -key xyz1bc123 -pretty
+	./manageDoc.sh -get -key xyz1bc123 -pretty
+	
+Save a document in a file called doc.json:
 
-To delete a document with the key xyz1bc123:
+	./manageDoc.sh -get -key xyz1bc123 -pretty -out doc.json
+	
+Update a document by reading from a file called doc.json:
+
+	./manageDoc.sh -set -key xyz1bc123 -in doc.json
+
+Delete a document with the key xyz1bc123:
 
 	./manageDoc.sh -delete -key xyz1bc123
 
