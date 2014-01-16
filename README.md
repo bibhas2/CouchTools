@@ -48,12 +48,16 @@ The options are as follows:
 - **-key** - The key of the document.
 - **-get** - Dump the document for the given key. If an output file is set using -out then the document is saved in that file.
 - **-set** - Set the document for the given key. If an input file is set using -in then the document data is read from the file. Otherwise, the document data
-is read from the standard input. if a document by the given key does not exist, it will be added. Otherwise, it will be updated.
+is read from the standard input. If a document by the given key does not exist, it will be added. Otherwise, it will be updated. Only textual documents are currently
+supported, which works fine for JSON.
 - **-delete** - Delete the document.
 - **-pretty** - Format the document output for JSON. Only used with -show. Use it only if you know that the document is JSON.
 - **-bucket** - The name of the bucket. Defaults to "default".
 - **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
 - **-password** - The bucket password if any.
+- **-in** - The file to read a document from. Used with -set only. If not supplied, data is read from standard input.
+- **-out** - The file to save a document to. Used with -get only. If not supplied, data is dumped on the standard output.
+
 
 ###Example
 Show a JSON document with key xyz1bc123:
