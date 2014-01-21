@@ -38,7 +38,7 @@ To import the view into the design document called UserUtilities in the default 
 	./importViews.sh -designdoc UserUtilities -bucket default -user Admin -password pass UserByEmail.map
 
 ##manageDoc - Manage documents
-You can perform various operations on documents. Currently viewing and deleting is supported.
+You can perform various operations on documents. Such as viewing and deleting documents.
 
 ###Usage
 	./manageDoc.sh [-get | -delete | -help] -key key [-in input_file] [-out output_file] [-bucket bucket_name] [-url connection_url] [-password bucket_password] [-pretty]
