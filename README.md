@@ -2,6 +2,31 @@
 
 Couchbase is more than awesome. But it sure will be cool to have more command line tools. Here is my attempt that.
 
+##query - Query a view
+This tool lets you query a view. You can supply some of the common query options like reduce, group etc.
+
+###Usage
+	./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-keys key1 key2 ...]
+
+The options are as follows:
+
+- **-designdoc** - The name of the design document. This can be a development or production design document. 
+- **-view** - The name of the view to query.
+- **-reduce** - Set the erduce flag for the query.
+- **-group** - Set the group flag.
+- **-pretty** - Format the document output for JSON. Use it only if you know that the document is JSON.
+- **-bucket** - The name of the bucket. 
+- **-host** - The host name of the Couchbase server. Defaults to localhost.
+- **-port** - The administrative port number. Defaults to 8092.
+- **-user** - The administrative user ID.
+- **-password** - The admin password
+- **-keys** - If present, this must be the last option in the command line. What follows is a list of one or more keys.
+
+###Examples
+
+	./query.sh -designdoc SSProject -view ProjectByTag -pretty -keys Drums
+	./query.sh -designdoc SSProject -view ProjectByTag -reduce -group
+
 ##importViews - Import views and reduces
 This tool lets you keep view and reduce definitions in files. You can version control these files. You can then import them into Couchbase.
 
