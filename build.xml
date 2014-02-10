@@ -6,8 +6,8 @@
 	</target>
 	<target name="package" description="Create the final package" depends="makejar">
 		<tar destfile="CouchTools.tar.gz" compression="gzip">
-			<fileset dir="lib"/>
-			<tarfileset dir="scripts" filemode="755"/>
+			<tarfileset dir="lib" prefix="CouchTools"/>
+			<tarfileset dir="scripts" prefix="CouchTools" filemode="755"/>
 		</tar>
 		<delete file="lib/couchtools.jar"/>
 	</target>
