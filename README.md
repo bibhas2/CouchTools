@@ -12,14 +12,13 @@ The options are as follows:
 
 - **-designdoc** - The name of the design document. This can be a development or production design document. 
 - **-view** - The name of the view to query.
-- **-reduce** - Set the erduce flag for the query.
+- **-reduce** - Set the reduce flag for the query.
 - **-group** - Set the group flag.
 - **-pretty** - Format the document output for JSON. Use it only if you know that the document is JSON.
-- **-bucket** - The name of the bucket. 
-- **-host** - The host name of the Couchbase server. Defaults to localhost.
-- **-port** - The administrative port number. Defaults to 8092.
-- **-user** - The administrative user ID.
-- **-password** - The admin password
+- **-out** - The file to save the result to. If not supplied, the result is dumped on the standard output.
+- **-bucket** - The name of the bucket. Defaults to "default".
+- **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
+- **-password** - The bucket password if any.
 - **-keys** - If present, this must be the last option in the command line. What follows is a list of one or more keys.
 
 ###Examples
