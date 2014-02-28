@@ -105,7 +105,8 @@ public class QueryDocs {
 		Query query = new Query();
 		
 		if (keys.size() > 1) {
-			query.setKeys(ComplexKey.of(keys.toArray()));
+			Object arr[] = keys.toArray(new String[keys.size()]);
+			query.setKey(ComplexKey.of(arr));
 		} else if (keys.size() == 1) {
 			query.setKey(keys.get(0));
 		}
@@ -133,7 +134,9 @@ public class QueryDocs {
 				doc = (String) row.getDocument();
 			}
 
-			if (!pretty) {
+			if (doc == null) {
+				writer.println("Document not found. May have been deleted.");
+			} else if (!pretty) {
 				writer.println(doc.toString());
 			} else {
 				//Format the document
@@ -148,7 +151,6 @@ public class QueryDocs {
 		
 		if (out != null) {
 			System.out.println("Document saved in file: " + out);
-		} else {
 			writer.close();
 		}
 		System.out.println("=================End Document=====================");
