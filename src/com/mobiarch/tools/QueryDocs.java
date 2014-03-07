@@ -45,7 +45,7 @@ public class QueryDocs {
 
 	public static void usage() {
 		System.out
-				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] -keys key1 key2 ... ");
+				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] -key key | [key1, key2]");
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -65,24 +65,28 @@ public class QueryDocs {
 		String designDoc = getArg(args, "-designdoc", null);
 		String view = getArg(args, "-view", null);
 		
-		if (designDoc == null || view == null) {
+		
+		ComplexKey complexKey = null;
+		String key = getArg(args, "-key", null);
+		
+		if (key.startsWith("[")) {
+			//This is a composite key
+			Gson gson = new Gson();
+			
+			String array[] = gson.fromJson(key, String[].class);
+			
+			if (array.length == 1) {
+				key = array[0];
+			} else if (array.length > 1) {
+				complexKey = ComplexKey.of(array);
+				key = null;
+			}
+		}
+
+		if (designDoc == null || view == null || (key == null && complexKey == null)) {
 			usage();
 			
 			return;
-		}
-		
-		ArrayList<String> keys = new ArrayList<String>();
-		boolean startKeys = false;
-		
-		for (String arg : args) {
-			if (arg.equals("-keys")) {
-				startKeys = true;
-				
-				continue;
-			}
-			if (startKeys) {
-				keys.add(arg);
-			}
 		}
 		
 		CouchbaseClient client = null;
@@ -91,7 +95,7 @@ public class QueryDocs {
 			List<URI> hosts = Arrays.asList(new URI(url));
 			client = new CouchbaseClient(hosts, bucket, password);
 			
-			query(designDoc, view, reduce, group, client, pretty, out, keys);
+			query(designDoc, view, reduce, group, client, pretty, out, key, complexKey);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -101,14 +105,13 @@ public class QueryDocs {
 		}
 	}
 
-	private static void query(String designDoc, String viewName, boolean reduce, boolean group, CouchbaseClient client, boolean pretty, String out, ArrayList<String> keys) throws Exception {
+	private static void query(String designDoc, String viewName, boolean reduce, boolean group, CouchbaseClient client, boolean pretty, String out, String key, ComplexKey complexKey) throws Exception {
 		Query query = new Query();
 		
-		if (keys.size() > 1) {
-			Object arr[] = keys.toArray(new String[keys.size()]);
-			query.setKey(ComplexKey.of(arr));
-		} else if (keys.size() == 1) {
-			query.setKey(keys.get(0));
+		if (complexKey != null) {
+			query.setKey(complexKey);
+		} else if (key != null) {
+			query.setKey(key);
 		}
 		if (reduce)
 			query.setReduce(reduce);

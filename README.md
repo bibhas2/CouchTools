@@ -6,7 +6,7 @@ Couchbase is more than awesome. But it sure will be cool to have more command li
 This tool lets you query a view. You can supply some of the common query options like reduce, group etc.
 
 ###Usage
-	./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-keys key1 key2 ...]
+	./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-key key | [key1, key2, ...]]
 
 The options are as follows:
 
@@ -19,7 +19,7 @@ The options are as follows:
 - **-bucket** - The name of the bucket. Defaults to "default".
 - **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
 - **-password** - The bucket password if any.
-- **-keys** - If present, this must be the last option in the command line. What follows is a list of one or more keys.
+- **-key** - The key for the query. You can supply a composite key by using a JSON array. For example: -key ['key1','key2']
 
 ###Examples
 
