@@ -45,7 +45,7 @@ public class QueryDocs {
 
 	public static void usage() {
 		System.out
-				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] -key key | [key1, key2]");
+				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-key key | [key1, key2]]");
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -69,7 +69,7 @@ public class QueryDocs {
 		ComplexKey complexKey = null;
 		String key = getArg(args, "-key", null);
 		
-		if (key.startsWith("[")) {
+		if (key != null && key.startsWith("[")) {
 			//This is a composite key
 			Gson gson = new Gson();
 			
@@ -83,7 +83,7 @@ public class QueryDocs {
 			}
 		}
 
-		if (designDoc == null || view == null || (key == null && complexKey == null)) {
+		if (designDoc == null || view == null) {
 			usage();
 			
 			return;
