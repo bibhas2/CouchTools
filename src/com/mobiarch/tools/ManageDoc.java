@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import net.spy.memcached.PersistTo;
+
 import com.couchbase.client.CouchbaseClient;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -83,6 +85,7 @@ public class ManageDoc {
 			e.printStackTrace();
 		} finally {
 			if (client != null) {
+				client.flush();
 				client.shutdown();
 			}
 		}
@@ -93,7 +96,7 @@ public class ManageDoc {
 		String obj = readFile(is);
 		
 		System.out.println("==========Setting document===============");
-		client.set(key, obj);
+		client.set(key, obj, PersistTo.MASTER);
 		System.out.println(obj);
 		System.out.println("=========================================");
 		

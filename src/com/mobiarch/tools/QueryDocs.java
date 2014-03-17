@@ -9,6 +9,7 @@ import java.util.List;
 import com.couchbase.client.CouchbaseClient;
 import com.couchbase.client.protocol.views.ComplexKey;
 import com.couchbase.client.protocol.views.Query;
+import com.couchbase.client.protocol.views.Stale;
 import com.couchbase.client.protocol.views.View;
 import com.couchbase.client.protocol.views.ViewResponse;
 import com.couchbase.client.protocol.views.ViewRow;
@@ -45,7 +46,7 @@ public class QueryDocs {
 
 	public static void usage() {
 		System.out
-				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-key key | [key1, key2]]");
+				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-key key | [key1, key2]] [-stale ok|false|update_after]");
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -64,6 +65,7 @@ public class QueryDocs {
 		String out = getArg(args, "-out", null);
 		String designDoc = getArg(args, "-designdoc", null);
 		String view = getArg(args, "-view", null);
+		String staleStr = getArg(args, "-stale", "update_after");
 		
 		
 		ComplexKey complexKey = null;
@@ -89,13 +91,27 @@ public class QueryDocs {
 			return;
 		}
 		
+		Stale stale = Stale.UPDATE_AFTER;
+		
+		if (staleStr.equals("ok")) {
+			stale = Stale.OK;
+		} else if (staleStr.equals("false")) {
+			stale = Stale.FALSE;
+		} else if (staleStr.equals("update_after")) {
+			stale = Stale.UPDATE_AFTER;
+		} else {
+			usage();
+			
+			return;
+		}
+		
 		CouchbaseClient client = null;
 		
 		try {
 			List<URI> hosts = Arrays.asList(new URI(url));
 			client = new CouchbaseClient(hosts, bucket, password);
 			
-			query(designDoc, view, reduce, group, client, pretty, out, key, complexKey);
+			query(designDoc, view, reduce, group, client, pretty, out, key, complexKey, stale);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -105,8 +121,10 @@ public class QueryDocs {
 		}
 	}
 
-	private static void query(String designDoc, String viewName, boolean reduce, boolean group, CouchbaseClient client, boolean pretty, String out, String key, ComplexKey complexKey) throws Exception {
+	private static void query(String designDoc, String viewName, boolean reduce, boolean group, CouchbaseClient client, boolean pretty, String out, String key, ComplexKey complexKey, Stale stale) throws Exception {
 		Query query = new Query();
+		
+		query.setStale(stale);
 		
 		if (complexKey != null) {
 			query.setKey(complexKey);
