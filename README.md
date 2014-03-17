@@ -20,10 +20,12 @@ The options are as follows:
 - **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
 - **-password** - The bucket password if any.
 - **-key** - The key for the query. You can supply a composite key by using a JSON array. For example: -key ['key1','key2']
+- **-stale** - Set the stale option to one of: ok, false and update_after. Default is update_after.
 
 ###Examples
 
-	./query.sh -designdoc SSProject -view ProjectByTag -pretty -keys Drums
+	./query.sh -designdoc SSProject -view ProjectByTag -pretty -key Drums
+	./query.sh -designdoc SSProject -view ProjectByTag -pretty -key ['Drums', 'Tabla']
 	./query.sh -designdoc SSProject -view ProjectByTag -reduce -group
 
 ##importViews - Import views and reduces
