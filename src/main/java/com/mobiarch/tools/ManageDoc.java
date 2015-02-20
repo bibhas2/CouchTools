@@ -3,14 +3,13 @@ package com.mobiarch.tools;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
 
-import net.spy.memcached.PersistTo;
-
-import com.couchbase.client.CouchbaseClient;
+import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.Cluster;
+import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.PersistTo;
+import com.couchbase.client.java.document.RawJsonDocument;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -44,7 +43,7 @@ public class ManageDoc {
 
 	public static void usage() {
 		System.out
-				.println("Usage: manageDoc.sh [-get | -set | -delete | -help] -key key [-bucket bucket_name] [-in input_file] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password]");
+				.println("Usage: manageDoc.sh [-get | -set | -delete | -help] -key key [-bucket bucket_name] [-in input_file] [-out output_file] [-host host_name (defaults to localhost)] [-password bucket_password]");
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -54,10 +53,10 @@ public class ManageDoc {
 			return;
 		}
 
-		String url = getArg(args, "-url", "http://127.0.0.1:8091/pools");
+		String host = getArg(args, "-host", "localhost");
 		String key = getArg(args, "-key", null);
 		String password = getArg(args, "-password", "");
-		String bucket = getArg(args, "-bucket", "default");
+		String bucketName = getArg(args, "-bucket", "default");
 		boolean pretty = hasArg(args, "-pretty");
 		String in = getArg(args, "-in", null);
 		String out = getArg(args, "-out", null);
@@ -67,36 +66,37 @@ public class ManageDoc {
 
 			return;
 		}
-		CouchbaseClient client = null;
-		
+		Bucket bucket;
+		Cluster cluster;
+	
+		cluster = CouchbaseCluster.create(host);
+		bucket = cluster.openBucket(bucketName);
+
 		try {
-			List<URI> hosts = Arrays.asList(new URI(url));
-			client = new CouchbaseClient(hosts, bucket, password);
-			
 			if (hasArg(args, "-get")) {
-				get(key, client, pretty, out);
+				get(key, bucket, pretty, out);
 			} else if (hasArg(args, "-set")) {
-				set(key, client, in);
+				set(key, bucket, in);
 			} else if (hasArg(args, "-delete")) {
-				delete(key, client);
+				delete(key, bucket);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (client != null) {
-				client.flush();
-				client.shutdown();
+			if (cluster != null) {
+				cluster.disconnect();
 			}
 		}
 	}
 
-	private static void set(String key, CouchbaseClient client, String in) throws Exception {
+	private static void set(String key, Bucket bucket, String in) throws Exception {
 		InputStream is = getInputStream(in);
 		String obj = readFile(is);
 		
 		System.out.println("==========Setting document===============");
-		client.set(key, obj, PersistTo.MASTER);
+		RawJsonDocument doc = RawJsonDocument.create(key, obj);
+		bucket.upsert(doc, PersistTo.MASTER);
 		System.out.println(obj);
 		System.out.println("=========================================");
 		
@@ -113,25 +113,26 @@ public class ManageDoc {
 			buff.append(sc.nextLine());
 			buff.append("\n");
 		}
+		sc.close();
 		
 		return buff.toString();
 	}
-	private static void delete(String key, CouchbaseClient client) {
+	private static void delete(String key, Bucket bucket) {
 		System.out.println("==========Deleting document===============");
-		Object doc = client.get(key);
+		RawJsonDocument doc = bucket.get(key, RawJsonDocument.class);
 		
 		if (doc == null) {
 			System.out.println("No document for key: " + key);
 		} else {
-			client.delete(key);
+			bucket.remove(key);
 			System.out.println("Done");
 		}
 		
 		System.out.println("==================================");
 	}
 
-	private static void get(String key, CouchbaseClient client, boolean pretty, String out) throws Exception {
-		Object doc = client.get(key);
+	private static void get(String key, Bucket bucket, boolean pretty, String out) throws Exception {
+		RawJsonDocument doc = bucket.get(key, RawJsonDocument.class);
 		System.out.println("=================Begin Document=====================");
 		PrintStream writer = getPrintStream(out);
 		
@@ -139,19 +140,19 @@ public class ManageDoc {
 			System.out.println("No document found for key: " + key);
 		} else {
 			if (!pretty) {
-				writer.println(doc.toString());
+				writer.println(doc.content());
 			} else {
 				//Format the document
 				JsonParser parser = new JsonParser();
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-				JsonElement el = parser.parse(doc.toString());
+				JsonElement el = parser.parse(doc.content());
 				String jsonString = gson.toJson(el); 
 				writer.println(jsonString);
 			}
+			
 			if (out != null) {
 				System.out.println("Document saved in file: " + out);
-			} else {
 				writer.close();
 			}
 		}

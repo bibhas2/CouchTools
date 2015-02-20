@@ -3,3 +3,4 @@ distro/
 *.class
 CouchTools.tar.gz
 /bin
+/target/

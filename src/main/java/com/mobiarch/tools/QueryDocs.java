@@ -1,18 +1,16 @@
 package com.mobiarch.tools;
 
 import java.io.PrintStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Iterator;
 
-import com.couchbase.client.CouchbaseClient;
-import com.couchbase.client.protocol.views.ComplexKey;
-import com.couchbase.client.protocol.views.Query;
-import com.couchbase.client.protocol.views.Stale;
-import com.couchbase.client.protocol.views.View;
-import com.couchbase.client.protocol.views.ViewResponse;
-import com.couchbase.client.protocol.views.ViewRow;
+import com.couchbase.client.java.Bucket;
+import com.couchbase.client.java.Cluster;
+import com.couchbase.client.java.CouchbaseCluster;
+import com.couchbase.client.java.document.RawJsonDocument;
+import com.couchbase.client.java.view.Stale;
+import com.couchbase.client.java.view.ViewQuery;
+import com.couchbase.client.java.view.ViewResult;
+import com.couchbase.client.java.view.ViewRow;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -46,7 +44,7 @@ public class QueryDocs {
 
 	public static void usage() {
 		System.out
-				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-key key | [key1, key2]] [-stale ok|false|update_after]");
+				.println("Usage: query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-host host_name (defaults to localhost)] [-password bucket_password] [-key key | [key1, key2]] [-stale ok|false|update_after]");
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -56,9 +54,9 @@ public class QueryDocs {
 			return;
 		}
 
-		String url = getArg(args, "-url", "http://127.0.0.1:8091/pools");
+		String host = getArg(args, "-host", "localhost");
 		String password = getArg(args, "-password", "");
-		String bucket = getArg(args, "-bucket", "default");
+		String bucketName = getArg(args, "-bucket", "default");
 		boolean pretty = hasArg(args, "-pretty");
 		boolean reduce = hasArg(args, "-reduce");
 		boolean group = hasArg(args, "-group");
@@ -66,25 +64,8 @@ public class QueryDocs {
 		String designDoc = getArg(args, "-designdoc", null);
 		String view = getArg(args, "-view", null);
 		String staleStr = getArg(args, "-stale", "update_after");
-		
-		
-		ComplexKey complexKey = null;
 		String key = getArg(args, "-key", null);
 		
-		if (key != null && key.startsWith("[")) {
-			//This is a composite key
-			Gson gson = new Gson();
-			
-			String array[] = gson.fromJson(key, String[].class);
-			
-			if (array.length == 1) {
-				key = array[0];
-			} else if (array.length > 1) {
-				complexKey = ComplexKey.of(array);
-				key = null;
-			}
-		}
-
 		if (designDoc == null || view == null) {
 			usage();
 			
@@ -94,7 +75,7 @@ public class QueryDocs {
 		Stale stale = Stale.UPDATE_AFTER;
 		
 		if (staleStr.equals("ok")) {
-			stale = Stale.OK;
+			stale = Stale.TRUE;
 		} else if (staleStr.equals("false")) {
 			stale = Stale.FALSE;
 		} else if (staleStr.equals("update_after")) {
@@ -105,57 +86,65 @@ public class QueryDocs {
 			return;
 		}
 		
-		CouchbaseClient client = null;
+		Bucket bucket;
+		Cluster cluster;
+	
+		cluster = CouchbaseCluster.create(host);
+		bucket = cluster.openBucket(bucketName);
 		
 		try {
-			List<URI> hosts = Arrays.asList(new URI(url));
-			client = new CouchbaseClient(hosts, bucket, password);
-			
-			query(designDoc, view, reduce, group, client, pretty, out, key, complexKey, stale);
+			query(designDoc, view, reduce, group, bucket, pretty, out, key, null, stale);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (client != null) {
-				client.shutdown();
+			if (cluster != null) {
+				cluster.disconnect();
 			}
 		}
 	}
 
-	private static void query(String designDoc, String viewName, boolean reduce, boolean group, CouchbaseClient client, boolean pretty, String out, String key, ComplexKey complexKey, Stale stale) throws Exception {
-		Query query = new Query();
-		
-		query.setStale(stale);
+	private static void query(String designDoc, String viewName, boolean reduce, boolean group, 
+			Bucket bucket, boolean pretty, String out, String key, String complexKey, Stale stale) throws Exception {
+		ViewQuery query = ViewQuery.from(designDoc, viewName)
+				.stale(stale)
+				.limit(2);
 		
 		if (complexKey != null) {
-			query.setKey(complexKey);
+			//query.setKey(complexKey);
 		} else if (key != null) {
-			query.setKey(key);
+			query.key(key);
 		}
 		if (reduce)
-			query.setReduce(reduce);
+			query.reduce(reduce);
 		if (group)
-			query.setGroup(group);
+			query.group(group);
 		if (!reduce) {
-			query.setIncludeDocs(true);
 		}
-		View view = client.getView(designDoc, viewName);
-		ViewResponse result = client.query(view, query);
+		ViewResult result = bucket.query(query);
 
 		System.out.println("=================Begin Document=====================");
 		PrintStream writer = getPrintStream(out);
-		for (ViewRow row : result) {
-			writer.print("Key: ");
-			writer.println(row.getKey());
+		Iterator<ViewRow> iter = result.rows();
+		
+		while (iter.hasNext()) {
+			RawJsonDocument doc = iter.next().document(RawJsonDocument.class);
 			
-			String doc = null;
+			if (doc == null) {
+				//Skipping deleted stale document
+				continue;
+			}
+			writer.print("Key: ");
+			writer.println(doc.id());
+			
+			String content = null;
 			
 			if (reduce) {
-				doc = row.getValue();
+				//doc = row.getValue();
 			} else {
-				doc = (String) row.getDocument();
+				content = doc.content();
 			}
 
-			if (doc == null) {
+			if (content == null) {
 				writer.println("Document not found. May have been deleted.");
 			} else if (!pretty) {
 				writer.println(doc.toString());
@@ -164,7 +153,7 @@ public class QueryDocs {
 				JsonParser parser = new JsonParser();
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-				JsonElement el = parser.parse(doc.toString());
+				JsonElement el = parser.parse(content);
 				String jsonString = gson.toJson(el); 
 				writer.println(jsonString);
 			}
