@@ -2,11 +2,24 @@
 
 Couchbase is more than awesome. But it sure will be cool to have more command line tools. Here is my attempt that.
 
+##Building and Installation
+Run this Maven command:
+
+```
+mvn clean package assembly:single
+```
+
+Copy ``target/CouchTools-bin.zip`` somewhere and unzip it. You can then run the shell scripts from the extracted folder.
+
 ##query - Query a view
 This tool lets you query a view. You can supply some of the common query options like reduce, group etc.
 
 ###Usage
-	./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] [-password bucket_password] [-key key | [key1, key2, ...]]
+```
+./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] \
+  [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] \
+  [-password bucket_password] [-key key | [key1, key2, ...]]
+```
 
 The options are as follows:
 
@@ -24,9 +37,11 @@ The options are as follows:
 
 ###Examples
 
-	./query.sh -designdoc SSProject -view ProjectByTag -pretty -key Drums
-	./query.sh -designdoc SSProject -view ProjectByTag -pretty -key ['Drums', 'Tabla']
-	./query.sh -designdoc SSProject -view ProjectByTag -reduce -group
+```
+./query.sh -designdoc SSProject -view ProjectByTag -pretty -key Drums
+./query.sh -designdoc SSProject -view ProjectByTag -pretty -key ['Drums', 'Tabla']
+./query.sh -designdoc SSProject -view ProjectByTag -reduce -group
+``
 
 ##importViews - Import views and reduces
 This tool lets you keep view and reduce definitions in files. You can version control these files. You can then import them into Couchbase.
@@ -36,7 +51,11 @@ For each view, create a file with the same name as the view and with a .map exte
 If a view has a reduce function, then in addition to the .map file, create a .reduce file and add the reduce code there. For example, if you have a view called CountLikes then you will need two files - CountLikes.map and CountLikes.reduce.
 
 ###Usage
-	./importViews.sh -designdoc design_document_name -bucket bucket_name [-host hostname] [-port port_number] [-user userID] [-password password] [-help] file1.map file2.map...
+```
+./importViews.sh -designdoc design_document_name -bucket bucket_name \
+  [-host hostname] [-port port_number] [-user userID] [-password password] \
+  [-help] file1.map file2.map...
+```
 
 The options are as follows:
 
@@ -51,23 +70,29 @@ The options are as follows:
 ###Examples
 Let us say that you have a view called UserByEmail with the following code:
 
-	 function (doc, meta) {
-		 if (doc.type == "UserProfile") {
-			 emit(doc.email, null);
-		 }
-	 }
+```javascript
+function (doc, meta) {
+    if (doc.type == "UserProfile") {
+        emit(doc.email, null);
+    }
+}
+```
 
 Create a file called UserByEmail.map and add the code above.
 
 To import the view into the design document called UserUtilities in the default bucket, run this command:
 
-	./importViews.sh -designdoc UserUtilities -bucket default -user Admin -password pass UserByEmail.map
+```
+./import-views.sh -designdoc UserUtilities -bucket default -user Admin -password pass UserByEmail.map
+```
 
 ##manageDoc - Manage documents
 You can perform various operations on documents. Such as viewing and deleting documents.
 
 ###Usage
-	./manageDoc.sh [-get | -delete | -help] -key key [-in input_file] [-out output_file] [-bucket bucket_name] [-url connection_url] [-password bucket_password] [-pretty]
+```
+./manage-doc.sh [-get | -delete | -help] -key key [-in input_file] [-out output_file] [-bucket bucket_name] [-url connection_url] [-password bucket_password] [-pretty]
+```
 
 The options are as follows:
 
@@ -88,18 +113,25 @@ supported, which works fine for JSON.
 ###Example
 Show a JSON document with key xyz1bc123:
 
-	./manageDoc.sh -get -key xyz1bc123 -pretty
-	
+```
+./manage-doc.sh -get -key xyz1bc123 -pretty
+```
+
 Save a document in a file called doc.json:
 
-	./manageDoc.sh -get -key xyz1bc123 -pretty -out doc.json
+```
+./manage-doc.sh -get -key xyz1bc123 -pretty -out doc.json
+```
 	
 Update a document by reading from a file called doc.json:
 
-	./manageDoc.sh -set -key xyz1bc123 -in doc.json
+```
+./manage-doc.sh -set -key xyz1bc123 -in doc.json
+```
 
 Delete a document with the key xyz1bc123:
 
-	./manageDoc.sh -delete -key xyz1bc123
-
+```
+./manage-doc.sh -delete -key xyz1bc123
+```
 
