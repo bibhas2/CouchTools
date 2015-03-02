@@ -16,8 +16,9 @@ This tool lets you query a view. You can supply some of the common query options
 
 ###Usage
 ```
-./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] [-bucket bucket_name] \
-  [-pretty] [-out output_file] [-url connection_url (defaults to http://127.0.0.1:8091/pools)] \
+./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] \
+  [-bucket bucket_name] [-host host_name] \
+  [-pretty] [-out output_file] \
   [-password bucket_password] [-key key | [key1, key2, ...]]
 ```
 
@@ -30,7 +31,7 @@ The options are as follows:
 - **-pretty** - Format the document output for JSON. Use it only if you know that the document is JSON.
 - **-out** - The file to save the result to. If not supplied, the result is dumped on the standard output.
 - **-bucket** - The name of the bucket. Defaults to "default".
-- **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
+- **-host** - The host name of couchbase server. Defaults to localhost.
 - **-password** - The bucket password if any.
 - **-key** - The key for the query. You can supply a composite key by using a JSON array. For example: -key ['key1','key2']
 - **-stale** - Set the stale option to one of: ok, false and update_after. Default is update_after.
@@ -41,7 +42,7 @@ The options are as follows:
 ./query.sh -designdoc SSProject -view ProjectByTag -pretty -key Drums
 ./query.sh -designdoc SSProject -view ProjectByTag -pretty -key ['Drums', 'Tabla']
 ./query.sh -designdoc SSProject -view ProjectByTag -reduce -group
-``
+```
 
 ##importViews - Import views and reduces
 This tool lets you keep view and reduce definitions in files. You can version control these files. You can then import them into Couchbase.
@@ -91,7 +92,9 @@ You can perform various operations on documents. Such as viewing and deleting do
 
 ###Usage
 ```
-./manage-doc.sh [-get | -delete | -help] -key key [-in input_file] [-out output_file] [-bucket bucket_name] [-url connection_url] [-password bucket_password] [-pretty]
+./manage-doc.sh [-get | -delete | -help] -key key [-in input_file] \
+  [-out output_file] [-bucket bucket_name] [-host host_name] \
+  [-password bucket_password] [-pretty]
 ```
 
 The options are as follows:
@@ -104,7 +107,7 @@ supported, which works fine for JSON.
 - **-delete** - Delete the document.
 - **-pretty** - Format the document output for JSON. Only used with -show. Use it only if you know that the document is JSON.
 - **-bucket** - The name of the bucket. Defaults to "default".
-- **-url** - The connection URL. Defaults to: http://127.0.0.1:8091/pools.
+- **-host** - The host name of couchbase server. Defaults to localhost.
 - **-password** - The bucket password if any.
 - **-in** - The file to read a document from. Used with -set only. If not supplied, data is read from standard input.
 - **-out** - The file to save a document to. Used with -get only. If not supplied, data is dumped on the standard output.
