@@ -11,7 +11,7 @@ mvn clean package assembly:single
 
 Copy ``target/CouchTools-bin.zip`` somewhere and unzip it. You can then run the shell scripts from the extracted folder.
 
-##query - Query a view
+##Query - Query a view
 This tool lets you query a view. You can supply some of the common query options like reduce, group etc.
 
 ###Usage
@@ -44,7 +44,7 @@ The options are as follows:
 ./query.sh -designdoc SSProject -view ProjectByTag -reduce -group
 ```
 
-##importViews - Import views and reduces
+##ImportViews - Import views and reduces
 This tool lets you keep view and reduce definitions in files. You can version control these files. You can then import them into Couchbase.
 
 For each view, create a file with the same name as the view and with a .map extension. For example, if you have a view called UserByEmail, then create a file called UserByEmail.map and add the JavaScript code there.
@@ -53,7 +53,7 @@ If a view has a reduce function, then in addition to the .map file, create a .re
 
 ###Usage
 ```
-./importViews.sh -designdoc design_document_name -bucket bucket_name \
+./import-views.sh -designdoc design_document_name -bucket bucket_name \
   [-host hostname] [-port port_number] [-user userID] [-password password] \
   [-help] file1.map file2.map...
 ```
@@ -87,7 +87,7 @@ To import the view into the design document called UserUtilities in the default 
 ./import-views.sh -designdoc UserUtilities -bucket default -user Admin -password pass UserByEmail.map
 ```
 
-##manageDoc - Manage documents
+##ManageDoc - Manage documents
 You can perform various operations on documents. Such as viewing and deleting documents.
 
 ###Usage
