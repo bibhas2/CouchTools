@@ -1,3 +1,5 @@
 #/bin/bash -f
 
-java -cp lib/CouchTools.jar com.mobiarch.tools.ImportViews "$@"
+INSTALL_PATH=`dirname $0`
+
+java -cp $INSTALL_PATH/lib/CouchTools.jar com.mobiarch.tools.ImportViews "$@"
