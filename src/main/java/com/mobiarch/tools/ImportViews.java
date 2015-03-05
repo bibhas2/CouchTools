@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import javax.xml.bind.DatatypeConverter;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class ImportViews {
 	public static String getArg(String args[], String arg, String defaultValue) {
@@ -85,10 +86,12 @@ public class ImportViews {
 
 		PrintStream out = new PrintStream(urlConnection.getOutputStream());
 		//out = System.out;
-		out.println("{");
-		out.println("\"views\":{");
+		JsonObject root = new JsonObject();
+		JsonObject views = new JsonObject();
+		
+		root.add("views", views);
+
 		// For each map file
-		Gson gson = new Gson();
 		for (int i = 0; i < mapFiles.size(); ++i) {
 			String mapFile = mapFiles.get(i);
 			
@@ -96,30 +99,30 @@ public class ImportViews {
 			
 			File f = new File(mapFile);
 			String viewName = f.getName();
+			//Strip out .map
 			viewName = viewName.substring(0, viewName.length() - 4);
-			out.println("\"" + viewName + "\":{\"map\":");
+			
 			String body = readFile(f);
-			out.println(gson.toJson(body));
+			
+			JsonObject view = new JsonObject();
+			
+			views.add(viewName, view);
+			view.addProperty("map", body);
 			
 			//See if reduce file exists
 			f = new File(viewName + ".reduce");
 			
 			if (f.exists()) {
-				out.println(",\"reduce\":");
 				body = readFile(f);
-				out.println(gson.toJson(body));
+				view.addProperty("reduce", body);
 			}
 			
-			out.println("}");
-
-			if ((i + 1) < mapFiles.size()) {
-				out.println(",");
-			}
 		}
-		// End for
-		out.println("}");
-		out.println("}");
 
+		Gson gson = new Gson();
+		//Dump the JSON to output stream
+		out.print(gson.toJson(root));
+		
 		InputStream is = urlConnection.getInputStream();
 		InputStreamReader isr = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(isr);
