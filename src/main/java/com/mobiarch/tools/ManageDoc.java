@@ -70,7 +70,7 @@ public class ManageDoc {
 		Cluster cluster;
 	
 		cluster = CouchbaseCluster.create(host);
-		bucket = cluster.openBucket(bucketName);
+		bucket = cluster.openBucket(bucketName, password);
 
 		try {
 			if (hasArg(args, "-get")) {
