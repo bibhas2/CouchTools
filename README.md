@@ -2,7 +2,7 @@
 
 Couchbase is more than awesome. But it sure will be cool to have more command line tools. Here is my attempt that.
 
-##Building and Installation
+## Building and Installation
 Run this Maven command:
 
 ```
@@ -11,10 +11,10 @@ mvn clean package assembly:single
 
 Copy ``target/CouchTools-bin.zip`` somewhere and unzip it. You can then run the shell scripts from the extracted folder.
 
-##Query - Query a view
+## Query - Query a view
 This tool lets you query a view. You can supply some of the common query options like reduce, group etc.
 
-###Usage
+### Usage
 ```
 ./query.sh -designdoc design_doc_name -view view_name [-reduce] [-group] \
   [-bucket bucket_name] [-host host_name] \
@@ -36,7 +36,7 @@ The options are as follows:
 - **-key** - The key for the query. You can supply a composite key by using a JSON array. For example: -key ['key1','key2']
 - **-stale** - Set the stale option to one of: ok, false and update_after. Default is update_after.
 
-###Examples
+### Examples
 
 ```
 ./query.sh -designdoc SSProject -view ProjectByTag -pretty -key Drums
@@ -44,14 +44,14 @@ The options are as follows:
 ./query.sh -designdoc SSProject -view ProjectByTag -reduce -group
 ```
 
-##ImportViews - Import views and reduces
+## ImportViews - Import views and reduces
 This tool lets you keep view and reduce definitions in files. You can version control these files. You can then import them into Couchbase.
 
 For each view, create a file with the same name as the view and with a .map extension. For example, if you have a view called UserByEmail, then create a file called UserByEmail.map and add the JavaScript code there.
 
 If a view has a reduce function, then in addition to the .map file, create a .reduce file and add the reduce code there. For example, if you have a view called CountLikes then you will need two files - CountLikes.map and CountLikes.reduce.
 
-###Usage
+### Usage
 ```
 ./import-views.sh -designdoc design_document_name -bucket bucket_name \
   [-host hostname] [-port port_number] [-user userID] [-password password] \
@@ -68,7 +68,7 @@ The options are as follows:
 - **-password** - The admin password
 - **Map files** - One map file for each view. Map files for **all** views in the design document must be specified in a single command line. Files must have .map extension. The base name of a map file will determine the name of the view. If system locates a file with the view name and .reduce extension, it will also be loaded as the reduce function.
 
-###Examples
+### Examples
 Let us say that you have a view called UserByEmail with the following code:
 
 ```javascript
@@ -87,10 +87,10 @@ To import the view into the design document called UserUtilities in the default 
 ./import-views.sh -designdoc UserUtilities -bucket default -user Admin -password pass UserByEmail.map
 ```
 
-##ManageDoc - Manage documents
+## ManageDoc - Manage documents
 You can perform various operations on documents. Such as viewing and deleting documents.
 
-###Usage
+### Usage
 ```
 ./manage-doc.sh [-get | -delete | -help] -key key [-in input_file] \
   [-out output_file] [-bucket bucket_name] [-host host_name] \
@@ -113,7 +113,7 @@ supported, which works fine for JSON.
 - **-out** - The file to save a document to. Used with -get only. If not supplied, data is dumped on the standard output.
 
 
-###Example
+### Example
 Show a JSON document with key xyz1bc123:
 
 ```
